@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Config with real credentials
+config/config.yaml
+
+# Playwright state
+amazon-session/
+
+# Temp files
+/tmp/
+*.tmp
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Playwright MCP
+.playwright-mcp/
+
+# Misc
+~/

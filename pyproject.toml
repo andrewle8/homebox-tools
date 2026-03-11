@@ -1,0 +1,8 @@
+[project]
+name = "homebox-tools"
+version = "0.1.0"
+description = "CLI tool for adding items to Homebox inventory from Amazon product URLs"
+requires-python = ">=3.10"
+
+[project.scripts]
+homebox-tools = "homebox_tools.__main__:main"

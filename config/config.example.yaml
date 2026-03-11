@@ -1,0 +1,14 @@
+# Homebox Tools Configuration
+# Copy to ~/.config/homebox-tools/config.yaml
+# Set permissions: chmod 0600 ~/.config/homebox-tools/config.yaml
+#
+# All values can be overridden with environment variables:
+#   HOMEBOX_URL, HOMEBOX_USERNAME, HOMEBOX_PASSWORD
+
+homebox:
+  url: http://your-homebox-instance:3100
+  username: your-email@example.com
+  password: your-password
+
+amazon:
+  session_dir: ~/.config/homebox-tools/amazon-session/
