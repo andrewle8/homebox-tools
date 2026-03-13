@@ -1,18 +1,17 @@
 # homebox-tools
 
-CLI tool for adding items to [Homebox](https://github.com/sysadminsmedia/homebox) inventory from Amazon product URLs.
+Paste an Amazon URL, get a fully populated [Homebox](https://github.com/sysadminsmedia/homebox) inventory item -- product image, cleaned-up name, specs, price, and manuals included.
+
+## What it does
 
 - Scrapes product data from Amazon (title, price, manufacturer, model, specs, image)
-- Cleans up SEO-stuffed product names
+- Cleans up SEO-stuffed product names into something readable
 - Searches for product manuals (ManualsLib, manufacturer sites, Internet Archive)
 - Creates the item in Homebox with all metadata and attachments
 
-## Requirements
-
-- Python 3.10+
-- Playwright (Chromium)
-
 ## Setup
+
+Requires Python 3.10+ and Playwright (Chromium).
 
 ```bash
 make setup
@@ -57,7 +56,7 @@ Environment variables override the config file: `HOMEBOX_URL`, `HOMEBOX_USERNAME
 
 ## How it works
 
-1. Opens Amazon in a real browser (headed Playwright) to avoid anti-bot detection
+1. Opens Amazon in a real browser (headed Playwright) to avoid bot detection
 2. Extracts product data from the page
 3. Strips Amazon SEO junk from the title
 4. Searches multiple sources for product manuals/PDFs
