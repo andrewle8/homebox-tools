@@ -83,9 +83,11 @@ async def _run_scrape(args, config) -> ProductData:
 
 
 def _apply_overrides(product: ProductData, overrides_json: str):
+    import dataclasses
+    valid_fields = {f.name for f in dataclasses.fields(ProductData)}
     overrides = json.loads(overrides_json)
     for key, value in overrides.items():
-        if hasattr(product, key):
+        if key in valid_fields:
             setattr(product, key, value)
 
 
@@ -262,6 +264,11 @@ def _load_from_folder(folder_path: str) -> ProductData:
     product_json = folder / "product.json"
     if product_json.exists():
         data = json.loads(product_json.read_text())
+        if "manuals" in data:
+            data["manuals"] = [ManualInfo(**m) for m in data["manuals"]]
+        if "specs" in data:
+            from homebox_tools.lib.models import SpecField
+            data["specs"] = [SpecField(**s) for s in data["specs"]]
         return ProductData(**data)
 
     name = folder.name.replace("_", " ").replace("-", " ")

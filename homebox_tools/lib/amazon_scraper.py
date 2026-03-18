@@ -4,7 +4,6 @@ import asyncio
 import re
 import random
 import tempfile
-import time
 from pathlib import Path
 
 import requests as http_requests
@@ -93,11 +92,10 @@ class AmazonScraper:
         self._session_dir = session_dir
         self._timeout = timeout
         self._browser = None
-        self._context = None
         self._page = None
 
-    def _random_delay(self, min_s: float = 2.0, max_s: float = 5.0):
-        time.sleep(random.uniform(min_s, max_s))
+    async def _random_delay(self, min_s: float = 2.0, max_s: float = 5.0):
+        await asyncio.sleep(random.uniform(min_s, max_s))
 
     async def _launch(self, headless: bool = False):
         from playwright.async_api import async_playwright
@@ -121,7 +119,7 @@ class AmazonScraper:
         await self._page.goto("https://www.amazon.com/gp/css/homepage.html")
         print("Please log into Amazon in the browser window.")
         print("Press Enter here when done...")
-        input()
+        await asyncio.get_event_loop().run_in_executor(None, input)
         await self._close()
 
     async def scrape(self, url: str) -> ProductData:
@@ -148,17 +146,15 @@ class AmazonScraper:
         # Attempt page load with one retry on failure
         await self._navigate_with_retry(page, url)
 
-        self._random_delay()
+        await self._random_delay()
 
         # Check for sign-in redirect (session expired)
         if "ap/signin" in page.url or "ap/cvf" in page.url:
-            await self._close()
             raise ScraperError("cookie_expired")
 
         # Check for CAPTCHA
         captcha = await page.query_selector("#captchacharacters")
         if captcha:
-            await self._close()
             raise ScraperError("captcha_detected")
 
         # Check for Amazon error/dog page
@@ -210,7 +206,7 @@ class AmazonScraper:
                 # Check HTTP status from the response
                 if response and response.status >= 400:
                     if attempt < max_retries:
-                        self._random_delay(3.0, 6.0)
+                        await self._random_delay(3.0, 6.0)
                         continue
                     raise ScraperError(
                         f"Page returned HTTP {response.status} for URL: {url}"
@@ -219,7 +215,7 @@ class AmazonScraper:
                 # Check if the loaded page is an Amazon error/dog page
                 if await self._is_error_page(page):
                     if attempt < max_retries:
-                        self._random_delay(3.0, 6.0)
+                        await self._random_delay(3.0, 6.0)
                         continue
                     raise ScraperError(
                         f"Amazon returned an error page for URL: {url}"
@@ -233,7 +229,7 @@ class AmazonScraper:
             except Exception as e:
                 last_error = e
                 if attempt < max_retries:
-                    self._random_delay(3.0, 6.0)
+                    await self._random_delay(3.0, 6.0)
                     continue
                 raise ScraperError(
                     f"Failed to load page after {1 + max_retries} "

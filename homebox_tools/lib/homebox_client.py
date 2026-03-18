@@ -114,19 +114,27 @@ class HomeboxClient:
 
     def search_items(self, query: str) -> list[dict]:
         resp = self._request("get", "/items", params={"q": query})
+        if not resp.ok:
+            raise HomeboxError(f"Search failed: {resp.status_code} {resp.text}")
         data = resp.json()
         return data.get("items", [])
 
     def get_locations(self) -> list[dict]:
         resp = self._request("get", "/locations/tree")
+        if not resp.ok:
+            raise HomeboxError(f"Get locations failed: {resp.status_code} {resp.text}")
         return resp.json()
 
     def get_tags(self) -> list[dict]:
         resp = self._request("get", "/tags")
+        if not resp.ok:
+            raise HomeboxError(f"Get tags failed: {resp.status_code} {resp.text}")
         return resp.json()
 
     def create_tag(self, name: str) -> str:
         resp = self._request("post", "/tags", json={"name": name})
+        if not resp.ok:
+            raise HomeboxError(f"Create tag failed: {resp.status_code} {resp.text}")
         return resp.json()["id"]
 
     def create_item(
@@ -157,6 +165,8 @@ class HomeboxClient:
 
     def get_item(self, item_id: str) -> dict:
         resp = self._request("get", f"/items/{item_id}")
+        if not resp.ok:
+            raise HomeboxError(f"Get item failed: {resp.status_code} {resp.text}")
         return resp.json()
 
     def upload_attachment(
@@ -166,23 +176,25 @@ class HomeboxClient:
         attachment_type: str = "photo",
         primary: bool = False,
     ) -> dict:
-        with open(file_path, "rb") as f:
-            files = {"file": (file_path.name, f)}
-            data = {
-                "type": attachment_type,
-                "name": file_path.stem,
-            }
-            if primary:
-                data["primary"] = "true"
-            headers = {}
-            if self._token:
-                headers["Authorization"] = self._token
-            resp = requests.post(
-                self._api(f"/items/{item_id}/attachments"),
-                headers=headers,
-                files=files,
-                data=data,
-            )
+        url = self._api(f"/items/{item_id}/attachments")
+        form_data = {"type": attachment_type, "name": file_path.stem}
+        if primary:
+            form_data["primary"] = "true"
+
+        def _do_upload():
+            with open(file_path, "rb") as f:
+                headers = {"Authorization": self._token} if self._token else {}
+                return self._do_request(
+                    "post", url, headers,
+                    files={"file": (file_path.name, f)},
+                    data=form_data,
+                )
+
+        resp = _do_upload()
+        if resp.status_code == 401:
+            if not self._refresh_token():
+                self.login()
+            resp = _do_upload()
         if not resp.ok:
             raise HomeboxError(f"Upload failed: {resp.status_code} {resp.text}")
         return resp.json()

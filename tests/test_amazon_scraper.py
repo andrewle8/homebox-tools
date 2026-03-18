@@ -200,7 +200,7 @@ def _make_scraper(timeout: float = 60.0) -> AmazonScraper:
     # Prevent actual browser launch
     scraper._launch = AsyncMock()
     scraper._close = AsyncMock()
-    scraper._random_delay = MagicMock()
+    scraper._random_delay = AsyncMock()
     return scraper
 
 
