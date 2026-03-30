@@ -101,4 +101,5 @@ Limits: 5 manuals max, 20MB per file, 50MB aggregate. PDF magic-byte validated.
 - Always ask for location (no auto-assignment)
 - Essential data only: name, price, image, description
 - Tags are category-based, suggest from existing list
-- Find and attach user manuals/PDFs when possible
+- Always search for and attach user manuals/PDFs — check manufacturer sites first (direct PDF links from Logitech, Razer, SteelSeries, Hakko, etc.), then fall back to the CLI's built-in manual_finder. Never skip manual search unless the user explicitly says to.
+- Always add a product photo — search manufacturer/retailer sites if no image is provided in the folder

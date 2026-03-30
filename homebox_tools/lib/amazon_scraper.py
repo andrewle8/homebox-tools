@@ -18,7 +18,7 @@ ASIN_SHORT_RE = re.compile(r"amzn\.com/([A-Z0-9]{10})")
 _ERROR_PAGE_INDICATORS = [
     "#error-page",
     "img[alt='Dogs of Amazon']",
-    "#503-error-message",
+    "[id='503-error-message']",
 ]
 
 # Text fragments that indicate the page is an error/unavailable page

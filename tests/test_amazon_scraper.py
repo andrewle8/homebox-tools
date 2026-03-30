@@ -137,7 +137,7 @@ def _make_mock_page(
         if selector in (
             "#error-page",
             "img[alt='Dogs of Amazon']",
-            "#503-error-message",
+            "[id='503-error-message']",
         ):
             return None
         if selector == "#imgTagWrapperId img, #landingImage":
