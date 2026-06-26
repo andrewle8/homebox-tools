@@ -1,6 +1,36 @@
 # homebox-tools
 
-Paste an Amazon URL, get a fully populated [Homebox](https://github.com/sysadminsmedia/homebox) inventory item -- product image, cleaned-up name, specs, price, and manuals included.
+Tell [Claude Code](https://claude.com/claude-code) "add this to my inventory" with an Amazon
+link, and it scrapes the product, cleans the name, hunts down the manuals, and fills out the
+[Homebox](https://github.com/sysadminsmedia/homebox) item over the API — image, specs, price,
+and PDFs included. Also works as a plain CLI.
+
+## Use with Claude Code
+
+This repo is built to be driven by an agent. It ships a [`CLAUDE.md`](CLAUDE.md) playbook (API
+gotchas, field limits, the two-phase item-creation flow) and a `/add-item` slash command, and the
+CLI speaks JSON with stable error codes so Claude can run it unattended.
+
+After [setup](#setup), from inside the repo:
+
+```
+/add-item https://amazon.com/dp/BXXXXXXXX
+```
+
+Or just talk to it:
+
+> add this to my Office inventory and tag it networking — https://amazon.com/dp/BXXXXXXXX
+
+Claude previews with `--dry-run --json`, shows you the cleaned product, asks which Homebox
+location it belongs in (it never auto-assigns), then creates the item non-interactively with
+`--yes`. The full agent contract:
+
+- `--json` — machine-readable output for every command
+- `--dry-run` — full extracted product as JSON, nothing written
+- `--overrides '{"name":"..."}'` — patch any scraped field before creating
+- `--yes` — non-interactive: auto-confirm manual uploads, never block on a prompt (requires `--location`)
+- Stable error codes: `cookie_expired`, `captcha_detected`, `location_required`,
+  `location_not_found`, `config_not_found`, `scrape_error`
 
 ## What it does
 
@@ -26,7 +56,7 @@ One-time Amazon login (saves session to disk):
 make login
 ```
 
-## Usage
+## Direct CLI usage
 
 ```bash
 # Add an Amazon product
@@ -35,14 +65,14 @@ python -m homebox_tools "https://amazon.com/dp/BXXXXXXXX"
 # Preview without creating
 python -m homebox_tools "https://amazon.com/dp/BXXXXXXXX" --dry-run
 
-# JSON output for scripting
+# JSON output for scripting / agents
 python -m homebox_tools "https://amazon.com/dp/BXXXXXXXX" --dry-run --json
+
+# Non-interactive (for agents/cron): auto-confirm manuals, fail fast if no location
+python -m homebox_tools "https://amazon.com/dp/BXXXXXXXX" --location "Office" --tags electronics networking --yes
 
 # From a local folder with product files
 python -m homebox_tools --folder ./my-product/
-
-# Specify location and tags
-python -m homebox_tools "https://amazon.com/dp/BXXXXXXXX" --location "Office" --tags electronics networking
 
 # Skip manual search
 python -m homebox_tools "https://amazon.com/dp/BXXXXXXXX" --no-manuals

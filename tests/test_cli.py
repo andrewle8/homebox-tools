@@ -45,3 +45,12 @@ def test_version_flag_contains_prog_name():
     )
     assert result.returncode == 0
     assert "homebox-tools" in result.stdout
+
+
+def test_yes_flag_in_help():
+    result = subprocess.run(
+        [sys.executable, "-m", "homebox_tools", "--help"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0
+    assert "--yes" in result.stdout

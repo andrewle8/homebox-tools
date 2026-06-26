@@ -33,6 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", type=str, help="Path to config file")
     parser.add_argument("--find-manuals", action="store_true", default=True, help="Search for product manuals (default: true)")
     parser.add_argument("--no-manuals", action="store_false", dest="find_manuals", help="Skip manual search")
+    parser.add_argument("-y", "--yes", action="store_true", help="Non-interactive: auto-confirm manual uploads, never prompt (requires --location)")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     return parser
@@ -117,6 +118,13 @@ async def _create_item(product: ProductData, args, config):
         if not location_id:
             _output_error(f"Location '{args.location}' not found", "location_not_found", args.json_output)
 
+    if not location_id and args.yes:
+        _output_error(
+            "Location required in non-interactive mode. Pass --location NAME.",
+            "location_required",
+            args.json_output,
+        )
+
     if not location_id:
         locations = client.get_locations()
         print("\nAvailable locations:")
@@ -152,11 +160,14 @@ async def _create_item(product: ProductData, args, config):
             print(f"Found {len(found)} manual(s):")
             for m in found:
                 print(f"  - {m.name}")
-            try:
-                confirm = input("Upload these manuals? [Y/n]: ").strip().lower()
-            except (EOFError, KeyboardInterrupt):
-                print("\nAborted.")
-                sys.exit(130)
+            if args.yes:
+                confirm = "y"
+            else:
+                try:
+                    confirm = input("Upload these manuals? [Y/n]: ").strip().lower()
+                except (EOFError, KeyboardInterrupt):
+                    print("\nAborted.")
+                    sys.exit(130)
             if confirm in ("", "y", "yes"):
                 manuals_to_upload = found
                 product.manuals = found

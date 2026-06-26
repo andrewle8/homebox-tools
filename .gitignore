@@ -23,6 +23,9 @@ amazon-session/
 .vscode/
 *.swp
 
+# Claude Code local-only settings (commands/ is shared, this is not)
+.claude/settings.local.json
+
 # Playwright MCP
 .playwright-mcp/
 
